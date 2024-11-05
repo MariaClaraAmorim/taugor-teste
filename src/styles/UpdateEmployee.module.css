@@ -1,0 +1,41 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.paper {
+    padding: 30px;
+    max-width: 800px;
+    width: 100%;
+}
+
+.form {
+    margin-top: 20px;
+}
+
+.photoPreview {
+    width: 95px;
+    height: 95px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 10px 0;
+    border: 2px solid #3f51b5;
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+.snackbar {
+    font-size: 1rem;
+    color: #fff;
+}
+
+.uploadButton {
+    margin-top: 10px;
+}

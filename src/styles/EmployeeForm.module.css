@@ -1,0 +1,61 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+  margin: auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.uploadContainer {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.uploadInput {
+  margin-bottom: 16px;
+}
+
+.progressContainer {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.progressText {
+  margin-left: 8px;
+}
+
+.dialogTitle {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.dialogContent {
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.imagePreview {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 16px;
+  border: 2px solid #3f51b5;
+}
+
+.dialogActions {
+  justify-content: space-between;
+  padding: 16px;
+}
+
+.uploadLabel {
+  font-size: 16px;
+  margin-left: 8px;
+}

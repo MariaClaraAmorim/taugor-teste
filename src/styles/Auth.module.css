@@ -1,0 +1,13 @@
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.toggleButton {
+    color: #3f51b5;
+    cursor: pointer;
+    margin-top: 10px;
+    text-align: center;
+}

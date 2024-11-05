@@ -1,0 +1,65 @@
+/* Estilos globais */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #e0e0e0;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+    height: 100vh;
+}
+
+/* Estilo do container principal */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+/* Estilos de cabeçalho */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin-bottom: 10px;
+}
+
+h4 {
+    color: #3f51b5;
+}
+
+/* Estilo dos botões */
+button {
+    background-color: #3f51b5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+/* Efeitos de hover para links */
+a {
+    color: #3f51b5;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Estilos para textos de parágrafo */
+p {
+    margin-bottom: 15px;
+}
