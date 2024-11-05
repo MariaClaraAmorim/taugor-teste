@@ -175,22 +175,22 @@ const UpdateEmployee = () => {
     if (newPosition) {
       // Cria um novo histórico adicionando a promoção atual com data e descrição da mudança
       const newHistory = [
-        ...history, 
+        ...history,
         {
           date: new Date().toLocaleString(),
-          changes: [`Promovido para ${newPosition}`] 
+          changes: [`Promovido para ${newPosition}`]
         }
       ];
 
       try {
         // Atualiza o documento do funcionário no Firestore com o novo cargo e histórico atualizado
         await updateDoc(docRef, {
-          position: newPosition, 
-          history: newHistory 
+          position: newPosition,
+          history: newHistory
         });
 
         setMessage(`Funcionário promovido para ${newPosition}.`);
-        setPosition(newPosition); 
+        setPosition(newPosition);
         setHistory(newHistory);
 
         setSnackOpen(true);
@@ -236,8 +236,7 @@ const UpdateEmployee = () => {
   if (loading) return <CircularProgress />;
 
   return (
-    <Box className={styles.container} sx={{ padding: 4 }}>
-
+    <Box className={styles.container}>
       <Paper elevation={3} sx={{ padding: 3, marginBottom: 4 }}>
         <Typography variant="h4" gutterBottom>
           Atualizar Funcionário

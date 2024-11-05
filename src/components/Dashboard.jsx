@@ -58,7 +58,7 @@ const Dashboard = () => {
         const filtered = employees.filter(emp =>
             emp.name.toLowerCase().includes(e.target.value.toLowerCase())
         );
-        setFilteredEmployees(filtered); 
+        setFilteredEmployees(filtered);
     };
 
     // Função para abrir o dialog de cadastro de funcionário
@@ -106,21 +106,21 @@ const Dashboard = () => {
                         variant="outlined"
                         fullWidth
                         value={search}
-                        onChange={handleSearchChange} 
-                        style={{ marginBottom: '20px' }}
+                        onChange={handleSearchChange}
                     />
                 </Grid>
-                <Grid item xs={12} sm={4} md={2}>
+                <Grid item xs={12} sm={4} md={4}>
                     <Button
                         variant="contained"
                         color="primary"
                         onClick={handleOpen}
-                        style={{ height: '100%' }}
+                        fullWidth
                     >
                         Cadastrar Novo Funcionário
                     </Button>
                 </Grid>
             </Grid>
+
 
             {filteredEmployees.length === 0 ? (
                 <Typography variant="body1" className={styles.noResults}>
@@ -138,7 +138,7 @@ const Dashboard = () => {
                                 <CardActions>
                                     <Button
                                         size="small"
-                                        onClick={() => handleEditEmployee(employee.id)} 
+                                        onClick={() => handleEditEmployee(employee.id)}
                                         color="secondary"
                                         className={styles.editButton}
                                     >

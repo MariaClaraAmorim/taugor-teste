@@ -49,4 +49,8 @@
     .controls {
         flex-direction: column;
     }
+
+    .controls>div {
+        width: 100%;
+    }
 }
