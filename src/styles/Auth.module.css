@@ -5,6 +5,12 @@
     height: 100vh;
 }
 
+.formAuth {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
 .toggleButton {
     color: #3f51b5;
     cursor: pointer;
