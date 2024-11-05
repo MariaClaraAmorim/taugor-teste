@@ -111,14 +111,14 @@ const UpdateEmployee = () => {
 
   // Função para atualizar as informações do funcionário
   const handleUpdateContact = async (event) => {
-    event.preventDefault(); 
+    event.preventDefault();
 
     // Validando os dados do formulário
     try {
       employeeSchema.parse({ name, phone, position, salary: parseFloat(salary), address, birthDate });
     } catch (error) {
-      const errors = error.errors.map(err => err.message).join(", "); 
-      setMessage(errors); 
+      const errors = error.errors.map(err => err.message).join(", ");
+      setMessage(errors);
       setSnackOpen(true);
       return;
     }
@@ -141,7 +141,7 @@ const UpdateEmployee = () => {
         date: new Date().toLocaleString(),
         changes,
       },
-    ]; 
+    ];
 
     // Atualizando as informações no Firestore
     try {
@@ -158,11 +158,47 @@ const UpdateEmployee = () => {
 
       setMessage("Informações atualizadas com sucesso!");
       setHistory(newHistory);
-      setSnackOpen(true); 
+      setSnackOpen(true);
     } catch (error) {
       console.error("Erro ao atualizar as informações:", error);
       setMessage("Erro ao atualizar as informações. " + error.message);
       setSnackOpen(true);
+    }
+  };
+
+  const handlePromote = async () => {
+    // Obtém a referência ao documento do funcionário no Firestore usando o employeeId
+    const docRef = doc(db, "employees", employeeId);
+
+    const newPosition = prompt("Insira o novo cargo:");
+
+    if (newPosition) {
+      // Cria um novo histórico adicionando a promoção atual com data e descrição da mudança
+      const newHistory = [
+        ...history, 
+        {
+          date: new Date().toLocaleString(),
+          changes: [`Promovido para ${newPosition}`] 
+        }
+      ];
+
+      try {
+        // Atualiza o documento do funcionário no Firestore com o novo cargo e histórico atualizado
+        await updateDoc(docRef, {
+          position: newPosition, 
+          history: newHistory 
+        });
+
+        setMessage(`Funcionário promovido para ${newPosition}.`);
+        setPosition(newPosition); 
+        setHistory(newHistory);
+
+        setSnackOpen(true);
+      } catch (error) {
+        console.error("Erro ao promover funcionário:", error);
+        setMessage("Erro ao promover funcionário. " + error.message);
+        setSnackOpen(true);
+      }
     }
   };
 
@@ -190,7 +226,6 @@ const UpdateEmployee = () => {
       });
       setMessage("Funcionário demitido com sucesso!");
       setSnackOpen(true);
-      navigate("/employees"); // Navegando de volta para a lista de funcionários
     } catch (error) {
       console.error("Erro ao demitir funcionário:", error);
       setMessage("Erro ao demitir funcionário. " + error.message);
@@ -198,37 +233,186 @@ const UpdateEmployee = () => {
     }
   };
 
-  if (loading) return <CircularProgress />; 
+  if (loading) return <CircularProgress />;
 
   return (
-    <div>
-      <Snackbar open={snackOpen} onClose={handleCloseSnack} autoHideDuration={6000} message={message} />
-      <Typography variant="h4">Atualizar Funcionário</Typography>
-      <Paper className={styles.container}>
-        <Card>
-          <CardMedia component="img" image={imgPreview || "/placeholder.png"} title="Foto do Funcionário" />
-          <CardContent>
-            <TextField label="Nome" variant="outlined" value={name} onChange={(e) => setName(e.target.value)} fullWidth />
-            <TextField label="Telefone" variant="outlined" value={phone} onChange={(e) => setPhone(e.target.value)} fullWidth />
-            <TextField label="Cargo" variant="outlined" value={position} onChange={(e) => setPosition(e.target.value)} fullWidth />
-            <TextField label="Salário" variant="outlined" value={salary} onChange={(e) => setSalary(e.target.value)} fullWidth />
-            <TextField label="Endereço" variant="outlined" value={address} onChange={(e) => setAddress(e.target.value)} fullWidth />
-            <TextField label="Data de Nascimento" variant="outlined" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} fullWidth />
-            <Button variant="contained" component="label">
-              Upload Foto
-              <input type="file" hidden onChange={handleImageUpload} />
-            </Button>
-            {loadingImage && <CircularProgress variant="determinate" value={progressPercent} />}
-            <Button variant="contained" onClick={handleUpdateContact}>Atualizar Funcionário</Button>
-            <Button variant="contained" color="error" onClick={handleFireEmployee}>Demitir Funcionário</Button>
-            <PDFDownloadLink document={<EmployeePDF employeeData={{ name, phone, position, salary, address, birthDate }} />} fileName={`${name}.pdf`}>
-              {({ loading }) => (loading ? "Carregando documento..." : "Baixar PDF")}
-            </PDFDownloadLink>
+    <Box className={styles.container} sx={{ padding: 4 }}>
+
+      <Paper elevation={3} sx={{ padding: 3, marginBottom: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Atualizar Funcionário
+        </Typography>
+        <Card sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <CardMedia
+            component="img"
+            image={imgPreview || "/placeholder.png"}
+            title="Foto do Funcionário"
+            sx={{ width: 150, height: 150, borderRadius: "50%", marginBottom: 2, border: "2px solid #1976d2" }}
+          />
+          <CardContent sx={{ width: '100%' }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Nome"
+                  variant="outlined"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Telefone"
+                  variant="outlined"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Cargo"
+                  variant="outlined"
+                  value={position}
+                  onChange={(e) => setPosition(e.target.value)}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Salário"
+                  variant="outlined"
+                  value={salary}
+                  onChange={(e) => setSalary(e.target.value)}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Endereço"
+                  variant="outlined"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Data de Nascimento"
+                  variant="outlined"
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  fullWidth
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <Button
+                  variant="contained"
+                  component="label"
+                  fullWidth
+                  sx={{
+                    backgroundColor: "#6E1869",
+                    color: "#fff",
+                    '&:hover': {
+                      backgroundColor: "#5A1459",
+                    },
+                    borderRadius: 1,
+                    textTransform: "none",
+                    height: 55,
+                  }}
+                >
+                  Upload Foto
+                  <input type="file" hidden onChange={handleImageUpload} />
+                </Button>
+                {loadingImage && (
+                  <CircularProgress variant="determinate" value={progressPercent} sx={{ marginTop: 1 }} />
+                )}
+              </Grid>
+
+              <Grid item xs={12}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={4}>
+                    <Button
+                      variant="contained"
+                      onClick={handleUpdateContact}
+                      fullWidth
+                      sx={{
+                        backgroundColor: "#6E1869",
+                        color: "#fff",
+                        '&:hover': {
+                          backgroundColor: "#5A1459",
+                        },
+                        borderRadius: 1,
+                        textTransform: "none",
+                      }}
+                    >
+                      Atualizar Funcionário
+                    </Button>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={handleFireEmployee}
+                      fullWidth
+                      sx={{
+                        borderRadius: 1,
+                        textTransform: "none",
+                        '&:hover': {
+                          backgroundColor: "#b71c1c",
+                        },
+                      }}
+                    >
+                      Demitir Funcionário
+                    </Button>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={handlePromote}
+                      fullWidth
+                      sx={{
+                        backgroundColor: "#47b214",
+                        color: "#fff",
+                        '&:hover': {
+                          backgroundColor: "#2e6f0f",
+                        },
+                        borderRadius: 1,
+                        textTransform: "none",
+                      }}
+                    >
+                      Promover Funcionário
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+
+            </Grid>
           </CardContent>
+          <Snackbar open={snackOpen} onClose={handleCloseSnack} autoHideDuration={6000} message={message} />
         </Card>
-        <EmployeeHistory history={history} /> {/* Componente para exibir o histórico */}
-      </Paper>
-    </div>
+        <Box sx={{ marginTop: 3 }}>
+          <EmployeeHistory history={history} />
+          <Grid item xs={12} sx={{ textAlign: 'center', marginTop: 2 }}>
+            <PDFDownloadLink
+              document={<EmployeePDF employeeData={employeeData} history={history} />}
+              fileName={`${name}.pdf`}
+            >
+              {({ blob, url, loading, error }) =>
+                loading ? "Gerando PDF..." : "Baixar PDF"
+              }
+            </PDFDownloadLink>
+
+          </Grid>
+        </Box>
+      </Paper >
+    </Box >
   );
 };
 
