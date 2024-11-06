@@ -9,10 +9,9 @@ import {
     Card,
     CardContent,
     CardActions,
-    Dialog,
 } from "@mui/material";
 import { db } from "../firebase";
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import EmployeeForm from "./EmployeeForm";
 import styles from "../styles/Dashboard.module.css";
@@ -24,8 +23,10 @@ const Dashboard = () => {
     const [search, setSearch] = useState("");
     const [filteredEmployees, setFilteredEmployees] = useState([]);
     const [open, setOpen] = useState(false); // Estado para controle do dialog
+    const [message, setMessage] = useState("");
+    const [messageType, setMessageType] = useState("");
 
-    const navigate = useNavigate(); // Inicializa o hook de navegação
+    const navigate = useNavigate(); 
 
     // Hook useEffect para buscar funcionários quando o componente é montado
     useEffect(() => {
@@ -85,6 +86,35 @@ const Dashboard = () => {
         }
     };
 
+    const handleDeleteEmployee = async (id) => {
+        // Exibe uma janela de confirmação antes de excluir o funcionário
+        const confirmDelete = window.confirm("Tem certeza de que deseja excluir este funcionário?");
+
+        if (confirmDelete) {
+            try {
+                // Referência ao documento do funcionário no Firestore
+                const employeeDoc = doc(db, "employees", id);
+
+                await deleteDoc(employeeDoc);
+
+                setEmployees(prevEmployees => prevEmployees.filter(emp => emp.id !== id));
+                setFilteredEmployees(prevEmployees => prevEmployees.filter(emp => emp.id !== id));
+
+                setMessage("Funcionário excluído com sucesso!");
+                setMessageType("success");
+            } catch (error) {
+                console.error("Erro ao excluir funcionário:", error);
+                setMessage("Erro ao excluir funcionário. Tente novamente.");
+                setMessageType("error");
+            }
+        } else {
+            // Se o usuário cancelar a exclusão
+            setMessage("Exclusão cancelada.");
+            setMessageType("info");
+        }
+    };
+
+
     // Função para editar um funcionário
     const handleEditEmployee = (id) => {
         navigate(`/update-employee/${id}`);
@@ -134,6 +164,7 @@ const Dashboard = () => {
                                 <CardContent>
                                     <Typography variant="h5" className={styles.employeeName}>{employee.name}</Typography>
                                     <Typography variant="body2" color="textSecondary">Departamento: {employee.department}</Typography>
+                                    <Typography variant="body2" color="textSecondary">Cargo: {employee.position}</Typography>
                                 </CardContent>
                                 <CardActions>
                                     <Button
@@ -144,10 +175,19 @@ const Dashboard = () => {
                                     >
                                         Editar
                                     </Button>
+                                    <Button
+                                        size="small"
+                                        onClick={() => handleDeleteEmployee(employee.id)} 
+                                        color="error"
+                                        className={styles.deleteButton}
+                                    >
+                                        Excluir
+                                    </Button>
                                 </CardActions>
                             </Card>
                         </Grid>
                     ))}
+
                 </Grid>
             )}
 
