@@ -1,7 +1,7 @@
 // IMPORTAÇÕES
 import { useEffect, useState } from "react";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { Button, TextField, CircularProgress, Snackbar, Grid, Typography, Paper, Card, CardContent, CardMedia, Box } from "@mui/material";
+import { Button, TextField, CircularProgress, Snackbar, Grid, Typography, Paper, Card, CardContent, CardMedia, Box, Alert } from "@mui/material";
 import styles from "../styles/UpdateEmployee.module.css";
 import { db, storage } from "../firebase";
 import { useParams, useNavigate } from "react-router-dom";
@@ -81,6 +81,7 @@ const UpdateEmployee = () => {
 
     fetchEmployeeData();
   }, [employeeId]);
+
   // Função para fazer upload da imagem
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -236,17 +237,19 @@ const UpdateEmployee = () => {
       ...history,
       {
         date: new Date().toLocaleString(),
-        changes: ["Demitido"], // Registro da demissão no histórico
+        changes: ["Demitido"],
       },
     ];
 
     try {
       await updateDoc(docRef, {
         position: "Demitido",
-        history: newHistory, // Atualizando o histórico no Firestore
+        history: newHistory,
       });
-      setMessage("Funcionário demitido com sucesso!");
+
+      setMessage(`Funcionário ${name} demitido com sucesso!`);
       setSnackOpen(true);
+      setHistory(newHistory);
     } catch (error) {
       console.error("Erro ao demitir funcionário:", error);
       setMessage("Erro ao demitir funcionário. " + error.message);
@@ -254,7 +257,9 @@ const UpdateEmployee = () => {
     }
   };
 
-  if (loading) return <CircularProgress />;
+  if (loading) {
+    return <CircularProgress />;
+  }
 
   return (
     <Box className={styles.container}>
@@ -346,13 +351,6 @@ const UpdateEmployee = () => {
                   Upload Foto
                   <input type="file" hidden onChange={handleImageUpload} />
                 </Button>
-                {message && (
-                  <div
-                    className={`${styles.message} ${messageType === 'success' ? styles.success : styles.error}`}
-                  >
-                    {message}
-                  </div>
-                )}
               </Grid>
 
               <Grid item xs={12}>
