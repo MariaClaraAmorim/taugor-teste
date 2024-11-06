@@ -50,6 +50,8 @@ const EmployeeForm = ({ open, onClose, onAddEmployee }) => {
   const [progressPercent, setProgressPercent] = useState(0);
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
 
   // Função para lidar com mudanças nos campos do formulário
   const handleChange = (e) => {
@@ -97,14 +99,21 @@ const EmployeeForm = ({ open, onClose, onAddEmployee }) => {
   // Função para adicionar um novo funcionário
   const handleAddEmployee = async (event) => {
     event.preventDefault();
-    // Valida os campos com base no passo atual
     const validationErrors = currentStep === 1 ? validateStep1() : validateStep2();
     if (Object.keys(validationErrors).length > 0) {
       return; // Se houver erros, não prossegue
     }
-    setLoadingSubmit(true); 
-    await onAddEmployee(newEmployee); // Chama a função para adicionar o funcionário
-    setLoadingSubmit(false); 
+    setLoadingSubmit(true);
+    try {
+      await onAddEmployee(newEmployee); // Chama a função para adicionar o funcionário
+      setMessage("Funcionário cadastrado com sucesso!");
+      setMessageType("success");
+    } catch (error) {
+      setMessage("Erro ao cadastrar o funcionário. Tente novamente.");
+      setMessageType("error");
+    } finally {
+      setLoadingSubmit(false);
+    }
   };
 
   // Avança para o próximo passo do formulário
@@ -125,10 +134,20 @@ const EmployeeForm = ({ open, onClose, onAddEmployee }) => {
   // Função para lidar com o upload da imagem
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (!file) return; // Retorna se não houver arquivo selecionado
+    // Verifica se há um arquivo e se é uma imagem
+    if (!file) {
+      setMessage("Selecione um arquivo para fazer upload!");
+      setMessageType("error");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setMessage("Apenas arquivos de imagem são permitidos!");
+      setMessageType("error");
+      return;
+    }
 
-    const storageRef = ref(storage, `images/${file.name}`); // Referência do armazenamento
-    const uploadTask = uploadBytesResumable(storageRef, file); // Tarefa de upload
+    const storageRef = ref(storage, `images/${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
 
     setLoadingImage(true); // Indica que o upload da imagem está em andamento
     uploadTask.on(
@@ -139,17 +158,26 @@ const EmployeeForm = ({ open, onClose, onAddEmployee }) => {
         setProgressPercent(progress);
       },
       (error) => {
-        alert("Erro no upload da imagem:", error);
+        setMessage(`Erro no upload da imagem: ${error.message}`);
+        setMessageType("error");
         setLoadingImage(false);
       },
       async () => {
-        // Obtém a URL de download da imagem após o upload
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        setNewEmployee((prevState) => ({
-          ...prevState,
-          imgURL: downloadURL, // Atualiza o estado com a URL da imagem
-        }));
-        setLoadingImage(false); // Finaliza o carregamento da imagem
+        try {
+          // Obtém a URL de download da imagem após o upload
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          setNewEmployee((prevState) => ({
+            ...prevState,
+            imgURL: downloadURL,
+          }));
+          setMessage("Imagem carregada com sucesso!");
+          setMessageType("success");
+        } catch (error) {
+          setMessage(`Erro ao obter a URL da imagem: ${error.message}`);
+          setMessageType("error");
+        } finally {
+          setLoadingImage(false);
+        }
       }
     );
   };
@@ -225,8 +253,7 @@ const EmployeeForm = ({ open, onClose, onAddEmployee }) => {
               error={!!errors.birthDate}
               helperText={errors.birthDate}
             />
-            <div style={{ display: "flex", alignItems: "center", marginTop: 16 }}>
-              {/* Exibe a imagem de perfil ou ícone de pessoa */}
+            <div className={styles.photoBox}>
               {newEmployee.imgURL ? (
                 <img
                   src={newEmployee.imgURL}
@@ -236,7 +263,6 @@ const EmployeeForm = ({ open, onClose, onAddEmployee }) => {
               ) : (
                 <PersonIcon style={{ fontSize: 52, color: "#ccc" }} />
               )}
-              {/* Campo de upload de imagem */}
               <input
                 accept="image/*"
                 style={{ display: "none" }}
@@ -246,12 +272,13 @@ const EmployeeForm = ({ open, onClose, onAddEmployee }) => {
               />
               <label htmlFor="upload-photo" className={styles.uploadLabel}>
                 <IconButton component="span" color="primary" style={{ fontSize: 16 }}>
-                  {loadingImage ? <CircularProgress size={24} /> : "Adicionar foto"}
+                  {loadingImage ? <CircularProgress size={24} /> : "Carregar Imagem"}
                 </IconButton>
               </label>
+              {message && (
+                <div className={styles[messageType]}>{message}</div>
+              )}
             </div>
-            {/* Exibe o progresso do upload */}
-            {progressPercent > 0 && <p>Upload: {progressPercent}% concluído</p>}
           </>
         )}
         {currentStep === 2 && (
@@ -310,27 +337,24 @@ const EmployeeForm = ({ open, onClose, onAddEmployee }) => {
           </>
         )}
       </DialogContent>
-      <DialogActions>
-        {currentStep > 1 && (
-          <Button onClick={handlePrevStep} color="primary">
-            Voltar
-          </Button>
+
+      <DialogActions className={styles.dialogActions}>
+        {currentStep === 2 && (
+          <Button onClick={handlePrevStep}>Voltar</Button>
         )}
-        {currentStep < 2 ? (
-          <Button onClick={handleNextStep} color="primary">
-            Próximo
-          </Button>
-        ) : (
-          <Button
-            onClick={handleAddEmployee}
-            color="primary"
-            disabled={loadingSubmit}
-          >
-            {loadingSubmit ? <CircularProgress size={24} /> : "Cadastrar"}
-          </Button>
-        )}
-        <Button onClick={onClose} color="secondary">
-          Cancelar
+        <Button
+          onClick={currentStep === 2 ? handleAddEmployee : handleNextStep}
+          color="primary"
+        >
+          {currentStep === 2 ? (
+            loadingSubmit ? (
+              <CircularProgress size={24} />
+            ) : (
+              "Cadastrar Funcionário"
+            )
+          ) : (
+            "Próximo"
+          )}
         </Button>
       </DialogActions>
     </Dialog>

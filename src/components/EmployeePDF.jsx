@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         fontWeight: "bold",
         textAlign: "center",
-        color: "#6E1869",
+        color: "#1976d2",
     },
     section: {
         marginBottom: 20,

@@ -27,6 +27,7 @@ const UpdateEmployee = () => {
   const [imgPreview, setImgPreview] = useState(null);
   const [history, setHistory] = useState([]);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
   const [snackOpen, setSnackOpen] = useState(false);
   const [loadingImage, setLoadingImage] = useState(false);
   const [progressPercent, setProgressPercent] = useState(0);
@@ -80,31 +81,51 @@ const UpdateEmployee = () => {
 
     fetchEmployeeData();
   }, [employeeId]);
-
   // Função para fazer upload da imagem
   const handleImageUpload = (e) => {
-    const file = e.target.files[0]; // Pegando o arquivo da entrada
-    if (!file) return;
+    const file = e.target.files[0];
 
-    const storageRef = ref(storage, `images/${file.name}`); // Referência ao armazenamento
-    const uploadTask = uploadBytesResumable(storageRef, file); // Iniciando o upload
+    if (!file) {
+      setMessage("Selecione um arquivo para fazer upload!");
+      setMessageType("error");
+      return;
+    }
 
-    setLoadingImage(true); // Indicando que o upload está em andamento
+    // Verificação do tipo de arquivo (apenas imagens)
+    if (!file.type.startsWith("image/")) {
+      setMessage("Apenas arquivos de imagem são permitidos!");
+      setMessageType("error");
+      return;
+    }
+
+    const storageRef = ref(storage, `images/${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    setLoadingImage(true);
     uploadTask.on(
       "state_changed",
       (snapshot) => {
-        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100); // Calculando o progresso
-        setProgressPercent(progress); // Atualizando o progresso
+        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+        setProgressPercent(progress);
       },
       (error) => {
-        alert("Erro no upload da imagem:", error); // Tratamento de erro no upload
+        setMessage(`Erro no upload da imagem: ${error.message}`);
+        setMessageType("error");
         setLoadingImage(false);
       },
       async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref); // Obtendo a URL da imagem
-        setImgPreview(downloadURL); // Atualizando a pré-visualização da imagem
-        setPhoto(downloadURL); // Atualizando o estado da foto
-        setLoadingImage(false);
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          setImgPreview(downloadURL);
+          setPhoto(downloadURL);
+          setMessage("Imagem carregada com sucesso!");
+          setMessageType("success");
+        } catch (error) {
+          setMessage(`Erro ao obter a URL da imagem: ${error.message}`);
+          setMessageType("error");
+        } finally {
+          setLoadingImage(false);
+        }
       }
     );
   };
@@ -312,10 +333,10 @@ const UpdateEmployee = () => {
                   component="label"
                   fullWidth
                   sx={{
-                    backgroundColor: "#6E1869",
+                    backgroundColor: "#1976d2",
                     color: "#fff",
                     '&:hover': {
-                      backgroundColor: "#5A1459",
+                      backgroundColor: "#3f51b5",
                     },
                     borderRadius: 1,
                     textTransform: "none",
@@ -325,8 +346,12 @@ const UpdateEmployee = () => {
                   Upload Foto
                   <input type="file" hidden onChange={handleImageUpload} />
                 </Button>
-                {loadingImage && (
-                  <CircularProgress variant="determinate" value={progressPercent} sx={{ marginTop: 1 }} />
+                {message && (
+                  <div
+                    className={`${styles.message} ${messageType === 'success' ? styles.success : styles.error}`}
+                  >
+                    {message}
+                  </div>
                 )}
               </Grid>
 
@@ -403,7 +428,7 @@ const UpdateEmployee = () => {
               document={<EmployeePDF employeeData={employeeData} history={history} />}
               fileName={`${name}.pdf`}
             >
-              {({ blob, url, loading, error }) =>
+              {({ loading }) =>
                 loading ? "Gerando PDF..." : "Baixar PDF"
               }
             </PDFDownloadLink>
