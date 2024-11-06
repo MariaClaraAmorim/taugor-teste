@@ -32,3 +32,21 @@
 .uploadButton {
     margin-top: 10px;
 }
+
+.message {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+.success {
+    color: green;
+    border: 1px solid green;
+    padding: 5px;
+}
+
+.error {
+    color: red;
+    border: 1px solid red;
+    padding: 5px;
+}
